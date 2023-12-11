@@ -74,12 +74,12 @@ entry step (i: i32) (w: World): World =
 entry render (w: World) =
   let pixel (p: cell) =
     match p
-    case #wall -> argb.white
-    case #sand x -> argb.mix x argb.black 0.5 argb.yellow
+    case #wall -> argb.red
+    case #sand x -> argb.mix x (argb.dark argb.white) 0.5 (argb.dark argb.yellow)
     case #empty -> argb.black
   in map (map pixel) w
 
 entry make (h: i64) (w: i64): World =
-  tabulate_2d h w (\i j -> if i == w-1 then #wall else
+  tabulate_2d h w (\i j -> if i == h-1 then #wall else
                            if (i+j) % 2 == 0 then #empty
                       else #sand ((1+f32.sin (f32.i64 (i^j)))/2))

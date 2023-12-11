@@ -15,6 +15,7 @@ struct
   fun default () = out ("\027[0m")
   fun hideCursor () = out ("\027[?25l")
   fun showCursor () = out ("\027[?25h")
+  fun home () = out ("\027[H")
   fun fgRGB (r, g, b) =
     out
       ("\027[38;2;" ^ Int.toString r ^ ";" ^ Int.toString g ^ ";"
@@ -70,7 +71,7 @@ fun loop (i, ctx, world) =
         val () = Sandstorm.Word32Array2.free pixels_fut
       in
         putPixels (h, w, pixels);
-        out ("\r\027[" ^ Int.toString h ^ "A")
+        Terminal.home ()
       end
   in
     case TextIO.input1 TextIO.stdIn of
@@ -81,10 +82,10 @@ fun loop (i, ctx, world) =
 
 fun main () =
   let
-    val lines = 30 (* Terminal.lines () *)
-    val columns = 30 (* Terminal.columns () *)
+    val lines = Terminal.lines ()
+    val columns = Terminal.columns ()
     val ctx = Sandstorm.Context.new Sandstorm.Config.default
-    val world = Sandstorm.Entry.make ctx (columns, lines)
+    val world = Sandstorm.Entry.make ctx (lines, columns)
   in
     TextIO.StreamIO.setBufferMode
       (TextIO.getOutstream TextIO.stdOut, IO.BLOCK_BUF);
@@ -92,6 +93,7 @@ fun main () =
     Terminal.default ();
     Terminal.clearScreen ();
     Terminal.hideCursor ();
+    Terminal.home ();
     (loop (0, ctx, world)
      handle Sandstorm.Error e =>
        ( Terminal.cookedMode ()
