@@ -13,24 +13,16 @@ struct
   fun clearScreen () = out ("\027[2J")
   fun clearLine () = out ("\027[2K")
   fun default () = out ("\027[0m")
+  fun hideCursor () = out ("\027[?25l")
+  fun showCursor () = out ("\027[?25h")
   fun fgRGB (r, g, b) =
-    ( out ("\027[38;2;")
-    ; out (Int.toString r)
-    ; out (";")
-    ; out (Int.toString g)
-    ; out (";")
-    ; out (Int.toString b)
-    ; out ("m")
-    )
+    out
+      ("\027[38;2;" ^ Int.toString r ^ ";" ^ Int.toString g ^ ";"
+       ^ Int.toString b ^ "m")
   fun bgRGB (r, g, b) =
-    ( out ("\027[48;2;")
-    ; out (Int.toString r)
-    ; out (";")
-    ; out (Int.toString g)
-    ; out (";")
-    ; out (Int.toString b)
-    ; out ("m")
-    )
+    out
+      ("\027[48;2;" ^ Int.toString r ^ ";" ^ Int.toString g ^ ";"
+       ^ Int.toString b ^ "m")
 end
 
 fun putPixels (h, w, pixels) =
@@ -49,14 +41,13 @@ fun putPixels (h, w, pixels) =
         in
           Terminal.fgRGB (r, g, b);
           Terminal.bgRGB (r, g, b);
-          out ("X");
+          out (" ");
           loopCols i (j + 1)
         end
     fun loopRows i =
       if i = h then ()
       else (loopCols i 0; Terminal.default (); out "\n"; loopRows (i + 1))
   in
-    Terminal.clearScreen ();
     loopRows 0;
     TextIO.flushOut TextIO.stdOut
   end
@@ -78,7 +69,8 @@ fun loop (i, ctx, world) =
         val (h, w) = Sandstorm.Word32Array2.shape pixels_fut
         val () = Sandstorm.Word32Array2.free pixels_fut
       in
-        putPixels (h, w, pixels)
+        putPixels (h, w, pixels);
+        out ("\r\027[" ^ Int.toString h ^ "A")
       end
   in
     case TextIO.input1 TextIO.stdIn of
@@ -98,6 +90,8 @@ fun main () =
       (TextIO.getOutstream TextIO.stdOut, IO.BLOCK_BUF);
     Terminal.rawMode ();
     Terminal.default ();
+    Terminal.clearScreen ();
+    Terminal.hideCursor ();
     (loop (0, ctx, world)
      handle Sandstorm.Error e =>
        ( Terminal.cookedMode ()

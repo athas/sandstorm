@@ -25,18 +25,6 @@ void raw_mode() {
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
-void clear_screen() {
-  printf("\033[2");
-}
-
-void clear_line() {
-  printf("\033[2K");
-}
-
-void def() {
-  printf("\033[0m");
-}
-
 int lines() {
   struct winsize w;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
