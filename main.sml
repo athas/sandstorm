@@ -75,15 +75,15 @@ fun loop (i, ctx, world) =
       end
   in
     case TextIO.input1 TextIO.stdIn of
-      NONE => (render (); Process.sleep (Time.fromMilliseconds 100); next ())
+      NONE => (render (); Process.sleep (Time.fromMilliseconds 0); next ())
     | SOME #"q" => stop ()
     | SOME c => next ()
   end
 
 fun main () =
   let
-    val lines = Terminal.lines ()
-    val columns = Terminal.columns ()
+    val lines = Terminal.lines () div 2 * 2
+    val columns = Terminal.columns () div 2 * 2
     val ctx = Sandstorm.Context.new Sandstorm.Config.default
     val world = Sandstorm.Entry.make ctx (lines, columns)
   in
