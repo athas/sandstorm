@@ -79,7 +79,20 @@ entry render (w: World) =
     case #empty -> argb.black
   in map (map pixel) w
 
+import "lib/github.com/diku-dk/cpprandom/random"
+
+module rnge = minstd_rand
+module dist = uniform_real_distribution f32 rnge
+
 entry make (h: i64) (w: i64): World =
-  tabulate_2d h w (\i j -> if i == h-1 then #wall else
-                           if (i+j) % 2 == 0 then #empty
-                      else #sand ((1+f32.sin (f32.i64 (i^j)))/2))
+  let rngs = rnge.rng_from_seed [i32.i64 h, i32.i64 w]
+             |> rnge.split_rng (h*w)
+             |> unflatten
+  in
+  tabulate_2d h w (\i j ->
+                     let rng = rngs[i,j]
+                     let (rng, x) = dist.rand (0,1) rng
+                     let (_rng, y) = dist.rand (0,1) rng
+                     in if x < 0.05 then #wall else
+                        if (i+j) % 2 == 0 then #empty
+                   else #sand y)
